@@ -71,7 +71,7 @@ class TicketLifecycleTest extends TestCase
         $this->assertSame($technician->getKey(), $ticket->assignee_id);
         $this->assertNotNull($ticket->assigned_at);
 
-        Notification::assertSentTo($technician, TicketAssignedNotification::class);
+        Notification::assertSentToTimes($technician, TicketAssignedNotification::class, 1);
     }
 
     public function test_reassigning_an_assigned_ticket_keeps_its_status(): void
@@ -201,7 +201,7 @@ class TicketLifecycleTest extends TestCase
 
         app(ResolveTicket::class)->handle($ticket, $technician);
 
-        Notification::assertSentTo($ticket->requester, TicketResolvedNotification::class);
+        Notification::assertSentToTimes($ticket->requester, TicketResolvedNotification::class, 1);
         Queue::assertPushed(ComputeTicketResolutionTime::class);
     }
 

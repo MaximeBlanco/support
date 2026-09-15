@@ -25,6 +25,21 @@ services:
             - mysql
             - redis
             - mailpit
+    queue:
+        image: 'sail-8.5/app'
+        command: ['php', 'artisan', 'queue:work', '--tries=3', '--sleep=1']
+        environment:
+            WWWUSER: '${WWWUSER}'
+            LARAVEL_SAIL: 1
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - sail
+        restart: unless-stopped
+        depends_on:
+            - laravel.test
+            - mysql
+            - redis
     mysql:
         image: 'mysql:8.4'
         ports:

@@ -42,7 +42,7 @@ class TicketActionsTest extends TestCase
         $this->assertSame(TicketStatus::Assigned, $ticket->status);
         $this->assertSame($technician->getKey(), $ticket->assignee_id);
 
-        Notification::assertSentTo($technician, TicketAssignedNotification::class);
+        Notification::assertSentToTimes($technician, TicketAssignedNotification::class, 1);
     }
 
     public function test_assigning_without_a_technician_shows_a_field_error(): void

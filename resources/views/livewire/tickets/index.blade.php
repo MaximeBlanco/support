@@ -95,7 +95,50 @@
                     @endif
                 </x-empty-state>
             @else
-                <div class="overflow-x-auto">
+                <ul class="divide-y divide-slate-100 md:hidden dark:divide-slate-800/70">
+                    @foreach ($tickets as $ticket)
+                        <li wire:key="card-{{ $ticket->id }}">
+                            <a href="{{ route('tickets.show', $ticket) }}"
+                               wire:navigate
+                               class="block p-4 transition hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                                <div class="flex items-start justify-between gap-3">
+                                    <span class="font-mono text-xs font-medium text-brand-600 dark:text-brand-400">{{ $ticket->reference }}</span>
+                                    <time datetime="{{ $ticket->created_at->toIso8601String() }}"
+                                          class="shrink-0 text-xs text-slate-400">
+                                        {{ $ticket->created_at->diffForHumans(short: true) }}
+                                    </time>
+                                </div>
+                                <p class="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">{{ $ticket->title }}</p>
+                                <div class="mt-2.5 flex flex-wrap items-center gap-2">
+                                    <x-badge :classes="$ticket->status->badgeClasses()" :dot="$ticket->status->dotClasses()">
+                                        {{ $ticket->status->label() }}
+                                    </x-badge>
+                                    <x-badge :classes="$ticket->priority->badgeClasses()" :dot="$ticket->priority->dotClasses()">
+                                        {{ $ticket->priority->label() }}
+                                    </x-badge>
+                                    @if ($ticket->comments_count > 0)
+                                        <span class="inline-flex items-center gap-1 text-xs text-slate-400">
+                                            <x-icon name="inbox" class="size-3" />
+                                            {{ $ticket->comments_count }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <div class="mt-3 flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+                                    <span class="flex min-w-0 items-center gap-1.5">
+                                        <x-avatar :user="$ticket->requester" size="size-5" />
+                                        <span class="truncate">{{ $ticket->requester->name }}</span>
+                                    </span>
+                                    <span class="flex min-w-0 items-center gap-1.5">
+                                        <x-avatar :user="$ticket->assignee" size="size-5" />
+                                        <span class="truncate">{{ $ticket->assignee?->name ?? __('ticket.filters.unassigned') }}</span>
+                                    </span>
+                                </div>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+
+                <div class="hidden overflow-x-auto md:block">
                     <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
                         <thead class="bg-slate-50/80 dark:bg-slate-800/40">
                             <tr class="text-left text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
