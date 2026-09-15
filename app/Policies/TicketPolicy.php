@@ -16,6 +16,11 @@ class TicketPolicy
             || $user->hasPermission(Permission::ViewAssignedTickets);
     }
 
+    public function viewAll(User $user): bool
+    {
+        return $user->hasPermission(Permission::ViewAllTickets);
+    }
+
     public function view(User $user, Ticket $ticket): bool
     {
         if ($user->hasPermission(Permission::ViewAllTickets)) {
