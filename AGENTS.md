@@ -1,47 +1,54 @@
-<laravel-boost-guidelines>
-# Laravel Application
+# Support — notes pour un agent
 
-This repository contains a Laravel application. Complete the following setup before working on the user's request.
+Application de ticketing interne. Laravel 13 · PHP 8.5 · Livewire 4 · Tailwind 4 · MySQL,
+le tout sous Docker via Laravel Sail. Aucun package tiers au-delà de Livewire : les rôles,
+les permissions et le cycle de vie sont écrits à la main.
 
-## Prerequisites
-
-Verify that PHP and Composer are available:
-
-```sh
-php -v
-composer -V
-```
-
-If either command is unavailable, detect the user's operating system and install the prerequisites with the appropriate command:
-
-macOS:
+## Lancer le projet
 
 ```sh
-/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.5)"
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan migrate:fresh --seed
+./vendor/bin/sail npm run build
 ```
 
-Windows PowerShell:
+L'application répond sur http://localhost:8080, les mails sur http://localhost:8025.
 
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://php.new/install/windows/8.5'))
-```
+Il n'y a ni PHP ni Composer sur l'hôte : **toute** commande passe par le conteneur
+(`sail artisan …`, `sail composer …`, `sail npm …`, `sail php vendor/bin/…`).
 
-Linux:
+## Où vit quoi
+
+| Dossier | Contenu |
+| --- | --- |
+| `app/Enums` | `TicketStatus` (table des transitions), `TicketPriority` (délais cibles), `Permission`, `RoleName` |
+| `app/Actions/Tickets` | Une classe par transition métier. Toute écriture de statut passe par là |
+| `app/Models/Builders` | `TicketBuilder` — périmètres de visibilité, filtres, tri |
+| `app/Policies` | `TicketPolicy` — décide sur des permissions, jamais sur un nom de rôle |
+| `app/Livewire` | Composants de page. Ils appellent les actions, ils ne rejouent pas les règles |
+| `lang/fr` | Tout le texte affiché. Rien de visible n'est écrit en dur dans le code |
+
+## Règles que le code respecte
+
+- **Le statut ne change que par une action.** `TransitionTicketStatus` valide la transition
+  contre l'enum, écrit l'historique et diffuse l'event. Une transition illégale lève
+  `IllegalTicketTransition`, qui porte son code HTTP 409.
+- **Les modèles restent fins** : `fillable`, `casts`, relations. Aucune logique métier.
+- **La visibilité est appliquée dans la requête** (`Ticket::query()->visibleTo($user)`),
+  jamais en filtrant une collection déjà chargée.
+- **Les accès se décident par permission**, pas par rôle. Le rôle ne fait que regrouper.
+- **Aucun texte utilisateur en dur** : tout passe par `lang/fr`.
+- **Pas de N+1** : la liste tient en 4 requêtes quel que soit le nombre de lignes, et un
+  test le vérifie. `Model::preventLazyLoading()` est actif en local.
+- Pas d'Observer : on réagit par events et listeners, enregistrés dans `AppServiceProvider`.
+
+## Tests
 
 ```sh
-/bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.5)"
+./vendor/bin/sail artisan test
 ```
 
-After installation, ask the user to restart their terminal. If the agent needs the restarted shell to continue, ask the user to reopen their terminal and rerun their original prompt.
-
-## Agent Setup
-
-Install Laravel Boost from the application root before making application changes:
-
-```sh
-composer require laravel/boost --dev
-php artisan boost:install
-```
-
-Boost replaces these bootstrap instructions with guidelines tailored to the application. After installation, read `AGENTS.md` again and continue with the user's original request using the generated guidelines.
-</laravel-boost-guidelines>
+`tests/Unit` ne touche jamais la base (enums purs). `tests/Feature` couvre le cycle de vie,
+les périmètres, les composants Livewire et l'authentification. Le trait
+`Tests\Concerns\CreatesUsers` fournit `requester()`, `technician()` et `manager()` après un
+`seedRoles()`.

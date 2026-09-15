@@ -1,58 +1,151 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<h1 align="center">Support</h1>
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  Une application de ticketing interne — déposer une demande, suivre son avancement,
+  et savoir qui s'en occupe.
 </p>
 
-## About Laravel
+<p align="center">
+  <img alt="Laravel 13" src="https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white">
+  <img alt="PHP 8.5" src="https://img.shields.io/badge/PHP-8.5-777BB4?logo=php&logoColor=white">
+  <img alt="Livewire 4" src="https://img.shields.io/badge/Livewire-4-FB70A9?logo=livewire&logoColor=white">
+  <img alt="Tailwind 4" src="https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-80%20passing-3FB950">
+</p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Le domaine
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Un **ticket** porte un objet, une description, un statut, une priorité, un demandeur et,
+une fois pris en charge, un technicien. Il suit un cycle de vie strict, accumule des
+commentaires, et garde la trace de chacun de ses changements d'état.
 
-## Learning Laravel
+### Les statuts et leurs transitions
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Toute transition absente de ce tableau est refusée **par le code**, pas seulement par
+l'interface.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+| Depuis | Transitions autorisées |
+| --- | --- |
+| `Ouvert` | `Assigné` |
+| `Assigné` | `En cours`, `Ouvert` *(désassignation)* |
+| `En cours` | `Résolu`, `Assigné` |
+| `Résolu` | `Clôturé`, `En cours` *(réouverture)* |
+| `Clôturé` | — |
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### Les priorités et leur délai cible
 
-## Agentic Development
+| Priorité | Objectif de résolution |
+| --- | --- |
+| Basse | 72 h |
+| Normale | 24 h |
+| Haute | 8 h |
+| Critique | 2 h |
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+À la résolution, un job compare le temps écoulé à l'objectif porté par la priorité et
+marque le ticket comme tenu ou hors délai.
 
-```bash
-composer require laravel/boost --dev
+### Les trois profils
 
-php artisan boost:install
+| Profil | Ce qu'il voit | Ce qu'il peut faire |
+| --- | --- | --- |
+| **Demandeur** | Ses propres tickets | Créer, commenter |
+| **Technicien** | Les tickets qui lui sont assignés | Commenter, faire avancer le statut |
+| **Responsable** | Tous les tickets | Assigner, réassigner, clôturer |
+
+La restriction s'applique **dans la requête SQL**, pas après elle : un utilisateur ne
+charge jamais une ligne qu'il n'a pas le droit de lire.
+
+---
+
+## Démarrer
+
+Prérequis : Docker.
+
+```sh
+git clone https://github.com/MaximeBlanco/support.git
+cd support
+cp .env.example .env
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+```sh
+docker compose up -d --build
+```
 
-## Contributing
+```sh
+docker compose exec laravel.test composer install
+docker compose exec laravel.test php artisan key:generate
+docker compose exec laravel.test php artisan migrate --seed
+docker compose exec laravel.test npm install && docker compose exec laravel.test npm run build
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Service | Adresse |
+| --- | --- |
+| Application | http://localhost:8080 |
+| Mailpit | http://localhost:8025 |
 
-## Code of Conduct
+### Comptes de démonstration
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Le mot de passe est `password` pour tous. La page de connexion propose les trois en un clic.
 
-## Security Vulnerabilities
+| Compte | Profil |
+| --- | --- |
+| `manager@support.test` | Responsable |
+| `nadia@support.test` | Technicien |
+| `maxime@support.test` | Demandeur |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## Ce qu'il y a dedans
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- **Authentification écrite à la main** — connexion avec limitation de tentatives,
+  inscription, déconnexion. Pas de starter kit.
+- **Rôles et permissions maison** — trois rôles qui regroupent huit permissions. Les
+  autorisations se décident toujours sur une permission, jamais sur un nom de rôle, pour
+  qu'ajouter un profil demain ne demande pas de toucher au code.
+- **Cycle de vie explicite** — une classe d'action par transition métier. Une transition
+  illégale lève une exception nommée qui porte son code HTTP 409.
+- **Historique complet** — chaque changement de statut est journalisé avec son auteur et
+  restitué en timeline sur la fiche du ticket.
+- **Notifications** — mail et cloche in-app à l'assignation et à la résolution.
+- **Interface Livewire** — recherche temps réel, filtres, tri par colonne, pagination,
+  thème clair/sombre, sans une ligne de JavaScript écrite à la main.
+- **Aucun texte en dur** — tout l'affichage passe par les fichiers de langue.
+
+---
+
+## Tests
+
+```sh
+docker compose exec laravel.test php artisan test
+```
+
+80 tests, 185 assertions.
+
+`tests/Unit` couvre les enums sans jamais toucher la base : la table des transitions y est
+vérifiée exhaustivement, dans les deux sens. `tests/Feature` couvre le cycle de vie, les
+périmètres de visibilité des trois profils, les composants Livewire et l'authentification.
+
+Un test vérifie que la liste tient en un nombre de requêtes **constant**, quel que soit le
+nombre de tickets affichés — c'est le garde-fou anti N+1.
+
+---
+
+## Structure
+
+```
+app/
+├── Actions/Tickets/     une classe par transition métier
+├── Enums/               statuts, priorités, permissions, rôles
+├── Events/              TicketCreated, TicketAssigned, TicketResolved, TicketStatusChanged
+├── Exceptions/          IllegalTicketTransition (409)
+├── Jobs/                calcul du respect du délai cible
+├── Listeners/           notifications
+├── Livewire/            composants de page
+├── Models/
+│   └── Builders/        TicketBuilder — visibilité, filtres, tri
+├── Notifications/
+└── Policies/
+lang/fr/                 tout le texte affiché
+```
