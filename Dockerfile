@@ -17,8 +17,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get install -y --no-install-recommends nodejs \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j"$(nproc)" pdo_mysql zip intl bcmath gd exif pcntl \
+    && docker-php-ext-enable opcache \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# The project directory is bind-mounted from the host. On Windows and macOS every
+# file read crosses a virtual filesystem boundary, and PHP reads thousands of them
+# per request — without opcache holding the compiled code in memory, a page takes
+# seconds instead of milliseconds.
+COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/zz-opcache.ini
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 

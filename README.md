@@ -102,7 +102,7 @@ propose les trois profils en un clic, il n'y a rien à taper.
 
 | Compte | Profil | Ce qu'il voit en se connectant |
 | --- | --- | --- |
-| **`manager@support.test`** | Responsable | Les 26 tickets, peut assigner, clôturer et importer |
+| **`manager@support.test`** | Responsable | Les 25 tickets, peut assigner, clôturer et importer |
 | **`nadia@support.test`** | Technicien | Seulement les tickets qui lui sont assignés |
 | **`maxime@support.test`** | Demandeur | Seulement les siens, peut en créer |
 
@@ -115,7 +115,7 @@ crédibles : `sofia@` (responsable), `thomas@` et `ines@` (techniciens),
 
 ### Ce que contient la démonstration
 
-26 tickets écrits à la main — pas de texte généré — répartis sur les cinq statuts
+25 tickets écrits à la main — pas de texte généré — répartis sur les cinq statuts
 et les quatre priorités, avec de vraies conversations entre demandeurs et
 techniciens, un historique daté pour chacun, et des dates d'ouverture étalées sur
 plusieurs semaines. Certains sont volontairement **hors délai**, de quoi voir

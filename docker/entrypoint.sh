@@ -37,7 +37,9 @@ ensure_app_key() {
 ensure_dependencies() {
     if [ ! -d vendor ] || [ ! -f vendor/autoload.php ]; then
         say "installing the PHP dependencies (first run, this takes a minute)"
-        composer install --no-interaction --prefer-dist --no-progress
+        # A classmap spares the autoloader a filesystem probe per class, which is
+        # the difference between a fast page and a slow one over a bind mount.
+        composer install --no-interaction --prefer-dist --no-progress --optimize-autoloader
     fi
 }
 
@@ -68,7 +70,9 @@ prepare_application() {
 
     ensure_assets
 
-    php artisan optimize:clear >/dev/null 2>&1 || true
+    # Caching the config, the routes and the views removes most of the remaining
+    # file reads. Run `php artisan optimize:clear` if you start editing.
+    php artisan optimize >/dev/null 2>&1 || true
 
     say "ready — http://localhost:${APP_PORT:-8080}"
 }
