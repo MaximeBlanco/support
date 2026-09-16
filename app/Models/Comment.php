@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\RecordsAttributeChanges;
 use Database\Factories\CommentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
@@ -14,7 +15,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Comment extends Model
 {
     /** @use HasFactory<CommentFactory> */
-    use HasFactory;
+    use HasFactory, RecordsAttributeChanges;
+
+    /**
+     * @return array<int, string>
+     */
+    public function recordedAttributes(): array
+    {
+        return ['body'];
+    }
 
     /**
      * @return BelongsTo<Ticket, $this>

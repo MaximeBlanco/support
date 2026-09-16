@@ -7,3 +7,7 @@ Schedule::command(EscalateOverdueTickets::class)
     ->hourly()
     ->withoutOverlapping()
     ->onOneServer();
+
+Schedule::command('model:prune')
+    ->daily()
+    ->onOneServer();
