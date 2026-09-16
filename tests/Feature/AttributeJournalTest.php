@@ -58,7 +58,7 @@ class AttributeJournalTest extends TestCase
     public function test_the_author_is_the_logged_in_user(): void
     {
         $manager = $this->manager();
-        $ticket = Ticket::factory()->create();
+        $ticket = Ticket::factory()->priority(TicketPriority::Low)->create();
 
         $this->actingAs($manager);
         $ticket->update(['priority' => TicketPriority::Critical]);
@@ -68,7 +68,7 @@ class AttributeJournalTest extends TestCase
 
     public function test_a_change_made_without_a_logged_in_user_is_still_recorded(): void
     {
-        $ticket = Ticket::factory()->create();
+        $ticket = Ticket::factory()->priority(TicketPriority::Low)->create();
 
         $ticket->update(['priority' => TicketPriority::High]);
 

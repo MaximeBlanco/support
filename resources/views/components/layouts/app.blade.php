@@ -64,6 +64,12 @@
                 </x-nav-link>
             @endcan
 
+            @can('import', App\Models\Ticket::class)
+                <x-nav-link :href="route('tickets.import')" icon="archive" :active="request()->routeIs('tickets.import')">
+                    {{ __('import.title') }}
+                </x-nav-link>
+            @endcan
+
             <div class="mt-auto rounded-xl bg-white/5 p-4 ring-1 ring-white/10">
                 <p class="text-xs font-medium text-slate-300">{{ auth()->user()->name }}</p>
                 <div class="mt-2 flex flex-wrap gap-1.5">

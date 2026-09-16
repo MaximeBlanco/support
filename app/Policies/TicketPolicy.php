@@ -40,6 +40,12 @@ class TicketPolicy
         return $user->hasPermission(Permission::CreateTicket);
     }
 
+    public function import(User $user): bool
+    {
+        return $user->hasPermission(Permission::CreateTicket)
+            && $user->hasPermission(Permission::AssignTicket);
+    }
+
     public function update(User $user, Ticket $ticket): bool
     {
         if (! $this->view($user, $ticket)) {
