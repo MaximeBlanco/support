@@ -10,7 +10,7 @@
   <img alt="PHP 8.5" src="https://img.shields.io/badge/PHP-8.5-777BB4?logo=php&logoColor=white">
   <img alt="Livewire 4" src="https://img.shields.io/badge/Livewire-4-FB70A9?logo=livewire&logoColor=white">
   <img alt="Tailwind 4" src="https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-80%20passing-3FB950">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-152%20passing-3FB950">
 </p>
 
 ---
@@ -115,13 +115,26 @@ Le mot de passe est `password` pour tous. La page de connexion propose les trois
 
 ---
 
+## Au-delà du socle
+
+Six extensions prolongent l'application :
+
+| | Extension | Ce que ça fait |
+| --- | --- | --- |
+| **E1** | Escalade automatique | Une commande horaire relève la priorité des tickets qui ont dépassé leur délai cible et prévient les responsables. Le test de retard dépend d'une colonne, donc la détection est **une requête par priorité** — quatre, quel que soit le volume — et relancer la commande n'escalade rien deux fois. |
+| **E2** | Historisation | Un trait que le modèle déclare lui-même journalise les attributs qu'il choisit de suivre. Pas d'Observer : le comportement est visible là où on le cherche. Le même trait couvre `Comment` sans une ligne dédiée. Le journal est en écriture seule et purgé au-delà de sa rétention. |
+| **E3** | Notifications multi-canal | Le canal dépend de la priorité : mail pour les basses, canal d'urgence en plus pour les hautes, et alerte aux responsables pour les critiques. Aucune condition sur la priorité dans le code appelant — chaque politique déclare ce dont elle répond, et une nouvelle est **un fichier, sans rien modifier**. |
+| **E4** | Import CSV | Un job déroule le fichier à travers des étapes ordonnées. Une ligne invalide est collectée avec son numéro et l'import continue ; un fichier cassé l'interrompt et l'opérateur est prévenu. Mille lignes résolvent leur demandeur **en une requête**. |
+| **E5** | Temps réel | Les events du domaine partent vers le navigateur — aucun event n'a été inventé pour l'écran. Chaque destinataire est calculé en rejouant la policy et joint sur **son propre canal privé**, donc le websocket ne peut pas laisser fuiter ce que la page aurait caché. |
+| **E6** | Serveur MCP | Trois outils pour un agent IA — rechercher, lire, ouvrir un ticket — plus une ressource décrivant les règles de saisie. L'agent porte un jeton d'utilisateur, donc les périmètres s'appliquent : un agent connecté en demandeur ne voit que ses tickets. Aucune règle métier n'est réécrite dans un outil. |
+
 ## Tests
 
 ```sh
 docker compose exec laravel.test php artisan test
 ```
 
-80 tests, 185 assertions.
+152 tests, 355 assertions.
 
 `tests/Unit` couvre les enums sans jamais toucher la base : la table des transitions y est
 vérifiée exhaustivement, dans les deux sens. `tests/Feature` couvre le cycle de vie, les

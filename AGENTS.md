@@ -55,6 +55,26 @@ le ticket. Le socket ne peut donc pas fuiter ce que l'écran aurait caché.
 > `./vendor/bin/sail restart queue` — sinon le job se termine « DONE » sans que rien
 > ne parte.
 
+## Serveur MCP
+
+`app/Mcp` expose trois Tools — rechercher, lire, ouvrir un ticket — et une Resource
+qui décrit les règles de saisie. Rien n'y est réimplémenté : la recherche passe par
+`visibleTo()`, l'ouverture par l'action `CreateTicket`, et la Resource lit les enums.
+Un test vérifie qu'aucun Tool ne fabrique de référence, ne décide d'un statut
+d'ouverture ni ne rejoue la machine à états.
+
+L'agent s'authentifie par jeton Sanctum, donc il agit **au nom d'un utilisateur** et
+les périmètres s'appliquent tels quels.
+
+```sh
+sail artisan tinker --execute='echo User::first()->createToken("mcp")->plainTextToken;'
+curl -X POST http://localhost:8080/mcp/support -H "Authorization: Bearer <jeton>" \
+  -H "Accept: application/json, text/event-stream" -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+```
+
+Il y a aussi un transport local : `sail artisan mcp:start support`.
+
 ## Tests
 
 ```sh
