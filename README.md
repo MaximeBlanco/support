@@ -83,7 +83,11 @@ docker compose exec laravel.test npm install && docker compose exec laravel.test
 | Service | Adresse |
 | --- | --- |
 | Application | http://localhost:8080 |
-| Mailpit | http://localhost:8025 |
+| Mailpit — les mails partis | http://localhost:8025 |
+| Reverb — le websocket | ws://localhost:8081 |
+
+Le `docker compose up` démarre aussi un worker de queue et Reverb : sans eux les
+notifications ne partent pas et la liste ne se met pas à jour toute seule.
 
 ### Comptes de démonstration
 
@@ -150,15 +154,23 @@ nombre de tickets affichés — c'est le garde-fou anti N+1.
 ```
 app/
 ├── Actions/Tickets/     une classe par transition métier
+├── Broadcasting/        TicketAudience — qui a le droit d'entendre quoi
+├── Console/Commands/    l'escalade planifiée
 ├── Enums/               statuts, priorités, permissions, rôles
-├── Events/              TicketCreated, TicketAssigned, TicketResolved, TicketStatusChanged
-├── Exceptions/          IllegalTicketTransition (409)
-├── Jobs/                calcul du respect du délai cible
+├── Events/              les events du domaine, diffusés tels quels
+├── Exceptions/          IllegalTicketTransition (409), et les autres
+├── Imports/             le pipeline CSV, une classe par étape
+├── Jobs/                délai de résolution, import en arrière-plan
 ├── Listeners/           notifications
 ├── Livewire/            composants de page
+├── Mcp/                 serveur, outils et ressource pour un agent IA
 ├── Models/
-│   └── Builders/        TicketBuilder — visibilité, filtres, tri
+│   ├── Builders/        TicketBuilder, UserBuilder — périmètres et filtres
+│   └── Concerns/        RecordsAttributeChanges — le journal, sans Observer
 ├── Notifications/
+│   └── Policies/        une politique de canal par niveau d'urgence
 └── Policies/
 lang/fr/                 tout le texte affiché
+routes/ai.php            le serveur MCP et son authentification
+routes/channels.php      l'autorisation des canaux privés
 ```
