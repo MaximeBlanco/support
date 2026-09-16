@@ -4,11 +4,11 @@ namespace App\Notifications\Policies;
 
 use App\Enums\Permission;
 use App\Enums\TicketPriority;
+use App\Models\Builders\UserBuilder;
 use App\Models\Ticket;
 use App\Models\User;
 use App\Notifications\Channels\UrgencyChannel;
 use App\Notifications\TicketNotificationPolicy;
-use Illuminate\Database\Eloquent\Builder;
 
 class CriticalPolicy implements TicketNotificationPolicy
 {
@@ -33,13 +33,10 @@ class CriticalPolicy implements TicketNotificationPolicy
     public function additionalRecipients(Ticket $ticket): array
     {
         return User::query()
-            ->whereHas('roles', fn (Builder $role): Builder => $role->whereHas(
-                'permissions',
-                fn (Builder $permission): Builder => $permission->where('name', Permission::AssignTicket->value),
-            ))
+            ->withPermission(Permission::AssignTicket)
             ->when(
                 $ticket->assignee_id !== null,
-                fn (Builder $query): Builder => $query->whereKeyNot($ticket->assignee_id),
+                fn (UserBuilder $query): UserBuilder => $query->whereKeyNot($ticket->assignee_id),
             )
             ->get()
             ->all();

@@ -37,6 +37,8 @@ class Ticket extends Model
             'assigned_at' => 'datetime',
             'resolved_at' => 'datetime',
             'closed_at' => 'datetime',
+            'escalated_at' => 'datetime',
+            'escalation_count' => 'integer',
             'resolved_within_target' => 'boolean',
         ];
     }
