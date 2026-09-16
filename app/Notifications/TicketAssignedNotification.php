@@ -12,14 +12,29 @@ class TicketAssignedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(private readonly Ticket $ticket) {}
+    public function __construct(public readonly Ticket $ticket) {}
 
     /**
      * @return array<int, string>
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return app(TicketNotificationPolicies::class)
+            ->for($this->ticket->priority)
+            ->channels();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toUrgency(object $notifiable): array
+    {
+        return [
+            'reference' => $this->ticket->reference,
+            'priority' => $this->ticket->priority->value,
+            'target_hours' => $this->ticket->priority->targetResolutionHours(),
+            'title' => $this->ticket->title,
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage
