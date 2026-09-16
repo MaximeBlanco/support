@@ -1,21 +1,21 @@
 # Support — notes pour un agent
 
 Application de ticketing interne. Laravel 13 · PHP 8.5 · Livewire 4 · Tailwind 4 · MySQL,
-le tout sous Docker via Laravel Sail. Aucun package tiers au-delà de Livewire : les rôles,
+le tout sous Docker. Les rôles,
 les permissions et le cycle de vie sont écrits à la main.
 
 ## Lancer le projet
 
 ```sh
-./vendor/bin/sail up -d
-./vendor/bin/sail artisan migrate:fresh --seed
-./vendor/bin/sail npm run build
+docker compose up -d
+docker compose exec app php artisan migrate:fresh --seed
+docker compose exec app npm run build
 ```
 
 L'application répond sur http://localhost:8080, les mails sur http://localhost:8025.
 
 Il n'y a ni PHP ni Composer sur l'hôte : **toute** commande passe par le conteneur
-(`sail artisan …`, `sail composer …`, `sail npm …`, `sail php vendor/bin/…`).
+(`docker compose exec app php artisan …`, `docker compose exec app composer …`, `docker compose exec app npm …`, `docker compose exec app ./vendor/bin/pint`).
 
 ## Où vit quoi
 
@@ -52,7 +52,7 @@ le ticket. Le socket ne peut donc pas fuiter ce que l'écran aurait caché.
 
 > **Piège** : un worker de queue démarré avant un changement de configuration garde
 > l'ancienne config en mémoire. Après avoir touché au broadcasting ou aux queues,
-> `./vendor/bin/sail restart queue` — sinon le job se termine « DONE » sans que rien
+> `docker compose restart queue` — sinon le job se termine « DONE » sans que rien
 > ne parte.
 
 ## Serveur MCP
@@ -67,18 +67,18 @@ L'agent s'authentifie par jeton Sanctum, donc il agit **au nom d'un utilisateur*
 les périmètres s'appliquent tels quels.
 
 ```sh
-sail artisan tinker --execute='echo User::first()->createToken("mcp")->plainTextToken;'
+docker compose exec app php artisan tinker --execute='echo User::first()->createToken("mcp")->plainTextToken;'
 curl -X POST http://localhost:8080/mcp/support -H "Authorization: Bearer <jeton>" \
   -H "Accept: application/json, text/event-stream" -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
-Il y a aussi un transport local : `sail artisan mcp:start support`.
+Il y a aussi un transport local : `docker compose exec app php artisan mcp:start support`.
 
 ## Tests
 
 ```sh
-./vendor/bin/sail artisan test
+docker compose exec app php artisan test
 ```
 
 `tests/Unit` ne touche jamais la base (enums purs). `tests/Feature` couvre le cycle de vie,

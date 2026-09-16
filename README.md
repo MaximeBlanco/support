@@ -61,43 +61,69 @@ charge jamais une ligne qu'il n'a pas le droit de lire.
 
 ## Démarrer
 
-Prérequis : Docker.
+**Le seul prérequis est Docker.** Ni PHP, ni Composer, ni Node à installer.
 
 ```sh
 git clone https://github.com/MaximeBlanco/support.git
 cd support
-cp .env.example .env
-```
-
-```sh
 docker compose up -d --build
 ```
 
+C'est tout. Au premier démarrage le conteneur installe les dépendances, crée le
+fichier `.env` et sa clé, migre la base, la remplit avec le jeu de démonstration
+et compile les assets. **Comptez cinq à dix minutes**, le temps de construire
+l'image et de télécharger les dépendances.
+
+Pour suivre la préparation :
+
 ```sh
-docker compose exec laravel.test composer install
-docker compose exec laravel.test php artisan key:generate
-docker compose exec laravel.test php artisan migrate --seed
-docker compose exec laravel.test npm install && docker compose exec laravel.test npm run build
+docker compose logs -f app
 ```
+
+Quand `[support] ready — http://localhost:8080` s'affiche, l'application est prête.
 
 | Service | Adresse |
 | --- | --- |
-| Application | http://localhost:8080 |
-| Mailpit — les mails partis | http://localhost:8025 |
-| Reverb — le websocket | ws://localhost:8081 |
+| **Application** | **http://localhost:8080** |
+| Mailpit — tous les mails envoyés | http://localhost:8025 |
+| Reverb — le websocket temps réel | ws://localhost:8081 |
 
-Le `docker compose up` démarre aussi un worker de queue et Reverb : sans eux les
-notifications ne partent pas et la liste ne se met pas à jour toute seule.
+Le `docker compose up` démarre aussi un worker de file d'attente et Reverb : sans
+eux les notifications ne partiraient pas et la liste ne se mettrait pas à jour
+toute seule.
+
+Pour tout arrêter : `docker compose down`. Pour repartir d'une base neuve :
+`docker compose down -v` puis `docker compose up -d`.
 
 ### Comptes de démonstration
 
-Le mot de passe est `password` pour tous. La page de connexion propose les trois en un clic.
+Tous les comptes ont le même mot de passe : **`password`**. La page de connexion
+propose les trois profils en un clic, il n'y a rien à taper.
 
-| Compte | Profil |
-| --- | --- |
-| `manager@support.test` | Responsable |
-| `nadia@support.test` | Technicien |
-| `maxime@support.test` | Demandeur |
+| Compte | Profil | Ce qu'il voit en se connectant |
+| --- | --- | --- |
+| **`manager@support.test`** | Responsable | Les 26 tickets, peut assigner, clôturer et importer |
+| **`nadia@support.test`** | Technicien | Seulement les tickets qui lui sont assignés |
+| **`maxime@support.test`** | Demandeur | Seulement les siens, peut en créer |
+
+Cinq autres comptes existent pour que les tickets aient des interlocuteurs
+crédibles : `sofia@` (responsable), `thomas@` et `ines@` (techniciens),
+`julie@`, `karim@`, `lea@`, `antoine@` et `fatou@` (demandeurs).
+
+> **Commencez par `manager@support.test`** : c'est le seul profil qui voit tout.
+> Connectez-vous ensuite en demandeur pour constater que le périmètre se referme.
+
+### Ce que contient la démonstration
+
+26 tickets écrits à la main — pas de texte généré — répartis sur les cinq statuts
+et les quatre priorités, avec de vraies conversations entre demandeurs et
+techniciens, un historique daté pour chacun, et des dates d'ouverture étalées sur
+plusieurs semaines. Certains sont volontairement **hors délai**, de quoi voir
+l'escalade automatique faire son travail :
+
+```sh
+docker compose exec app php artisan tickets:escalate
+```
 
 ---
 
@@ -135,7 +161,7 @@ Six extensions prolongent l'application :
 ## Tests
 
 ```sh
-docker compose exec laravel.test php artisan test
+docker compose exec app php artisan test
 ```
 
 152 tests, 355 assertions.
