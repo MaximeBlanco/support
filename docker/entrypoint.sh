@@ -19,12 +19,15 @@ wait_for_mysql() {
     say "database is up."
 }
 
-ensure_env() {
+ensure_env_file() {
     if [ ! -f .env ]; then
         say "creating .env from .env.example"
         cp .env.example .env
     fi
+}
 
+# Needs vendor/, so it only runs once the dependencies are in place.
+ensure_app_key() {
     if ! grep -qE '^APP_KEY=base64:' .env; then
         say "generating the application key"
         php artisan key:generate --force --no-interaction
@@ -47,8 +50,9 @@ ensure_assets() {
 }
 
 prepare_application() {
-    ensure_env
+    ensure_env_file
     ensure_dependencies
+    ensure_app_key
     wait_for_mysql
 
     mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache
