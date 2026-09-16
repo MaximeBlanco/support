@@ -45,6 +45,21 @@ class Index extends Component
         $this->authorize('viewAny', Ticket::class);
     }
 
+    /**
+     * Refreshes when a ticket this user is entitled to see moves.
+     *
+     * The channel is the viewer's own, so nothing reaches the browser that the
+     * page would not have shown anyway.
+     *
+     * @return array<string, string>
+     */
+    public function getListeners(): array
+    {
+        return [
+            'echo-private:users.'.auth()->id().',.ticket.updated' => '$refresh',
+        ];
+    }
+
     public function updatedSearch(): void
     {
         $this->resetPage();

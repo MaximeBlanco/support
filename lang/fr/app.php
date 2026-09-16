@@ -56,6 +56,11 @@ return [
         'demo_password' => 'Mot de passe : password',
     ],
 
+    'live' => [
+        'on' => 'En direct',
+        'hint' => 'La liste se met à jour toute seule quand un ticket change.',
+    ],
+
     'common' => [
         'search' => 'Rechercher',
         'loading' => 'Chargement…',

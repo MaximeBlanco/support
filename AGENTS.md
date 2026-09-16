@@ -42,6 +42,19 @@ Il n'y a ni PHP ni Composer sur l'hôte : **toute** commande passe par le conten
   test le vérifie. `Model::preventLazyLoading()` est actif en local.
 - Pas d'Observer : on réagit par events et listeners, enregistrés dans `AppServiceProvider`.
 
+## Temps réel
+
+Les events du domaine (`TicketCreated`, `TicketAssigned`, `TicketStatusChanged`)
+implémentent `ShouldBroadcast` et partent vers Reverb. Chaque destinataire est calculé
+par `TicketAudience`, qui rejoue la **policy** : on ne diffuse jamais sur un canal
+partagé, seulement sur le canal privé `users.{id}` de chaque personne autorisée à voir
+le ticket. Le socket ne peut donc pas fuiter ce que l'écran aurait caché.
+
+> **Piège** : un worker de queue démarré avant un changement de configuration garde
+> l'ancienne config en mémoire. Après avoir touché au broadcasting ou aux queues,
+> `./vendor/bin/sail restart queue` — sinon le job se termine « DONE » sans que rien
+> ne parte.
+
 ## Tests
 
 ```sh

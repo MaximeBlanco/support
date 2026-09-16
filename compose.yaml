@@ -25,6 +25,21 @@ services:
             - mysql
             - redis
             - mailpit
+    reverb:
+        image: 'sail-8.5/app'
+        command: ['php', 'artisan', 'reverb:start', '--host=0.0.0.0', '--port=8080']
+        ports:
+            - '${REVERB_FORWARD_PORT:-8081}:8080'
+        environment:
+            WWWUSER: '${WWWUSER}'
+            LARAVEL_SAIL: 1
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - sail
+        restart: unless-stopped
+        depends_on:
+            - laravel.test
     queue:
         image: 'sail-8.5/app'
         command: ['php', 'artisan', 'queue:work', '--tries=3', '--sleep=1']

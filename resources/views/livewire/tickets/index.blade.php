@@ -8,8 +8,17 @@
                 <h2 class="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
                     {{ __('app.nav.tickets') }}
                 </h2>
-                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                <p class="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
                     {{ trans_choice('ticket.counters.results', $tickets->total(), ['count' => $tickets->total()]) }}
+
+                    <span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400"
+                          title="{{ __('app.live.hint') }}">
+                        <span class="relative flex size-2" aria-hidden="true">
+                            <span class="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex size-2 rounded-full bg-emerald-500"></span>
+                        </span>
+                        {{ __('app.live.on') }}
+                    </span>
                 </p>
             </div>
 
